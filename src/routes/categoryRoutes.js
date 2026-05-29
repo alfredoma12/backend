@@ -2,8 +2,7 @@ const express = require('express');
 const router  = express.Router();
 const { getAllCategories } = require('../controllers/categoryController');
 
-// Definir el endpoint para obtener categorías
+// Línea 6 corregida: ahora getAllCategories sí tendrá un valor real y no undefined
 router.get('/', getAllCategories);
 
-// 🚨 ESTA LÍNEA ES LA CRUCIAL QUE FALTA O ESTÁ MAL ESCRITA:
 module.exports = router;
