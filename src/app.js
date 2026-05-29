@@ -5,19 +5,22 @@ require('dotenv').config();
 
 const app = express();
 
-// Middlewares Globales
 app.use(cors());
 app.use(express.json());
 
-// Hacer pública la carpeta de imágenes subidas para que sean accesibles vía URL
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
-// Enlace de Rutas de la API
+// Enlaces a los archivos de rutas correctos
 app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/users', require('./routes/userRoutes'));
-app.use('/api/products', require('./middlewares/productRoutes'));
 
-// Manejo de rutas no encontradas (404)
+// CORRECCIÓN 1: Apuntar a la carpeta routes y no a middlewares
+app.use('/api/products', require('./routes/productRoutes'));
+
+// CORRECCIÓN 2: Agregar la ruta de categorías que faltaba
+app.use('/api/categories', require('./routes/categoryRoutes'));
+
+// Manejador para rutas no encontradas
 app.use((req, res) => {
   res.status(404).json({ error: 'Ruta no encontrada.' });
 });
