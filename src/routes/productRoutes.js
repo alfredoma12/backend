@@ -3,15 +3,13 @@ const router = express.Router();
 
 const productController = require('../controllers/productController');
 
-
-const { verifyToken, optionalToken } = require('./auth');
-const { validate, validatePrice } = require('./validate');
-const upload = require('./upload');
-
+// Ruta corregida apuntando correctamente a la carpeta middlewares
+const { verifyToken, optionalToken } = require('../middlewares/auth');
+const { validate, validatePrice } = require('../middlewares/validate');
+const upload = require('../middlewares/upload');
 
 router.get('/', optionalToken, productController.getAllProducts);
 router.get('/:id', optionalToken, productController.getProductById);
-
 
 router.post(
   '/',
@@ -22,10 +20,7 @@ router.post(
   productController.createProduct
 );
 
-
 router.put('/:id', verifyToken, productController.updateProduct);
-
-
 router.delete('/:id', verifyToken, productController.deleteProduct);
 
 module.exports = router;
