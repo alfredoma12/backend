@@ -7,16 +7,16 @@ const { verifyToken, optionalToken } = require('../middlewares/auth');
 const { validate, validatePrice } = require('../middlewares/validate');
 const upload = require('../middlewares/upload');
 
-// 1. Rutas de obtención generales
+// 1. Obtener todos los productos
 router.get('/', optionalToken, productController.getAllProducts);
 
-// 🚨 CORRECCIÓN CRUCIAL: Ponemos '/mine' ANTES de '/:id' para que Express no se confunda
+// 🚨 CORRECCIÓN CLAVE: Ponemos '/mine' ANTES de '/:id' para que no choque con el parámetro numérico
 router.get('/mine', verifyToken, productController.getMineProducts);
 
-// 2. Ruta con parámetro dinámico al final
+// 2. Obtener un producto por ID (queda abajo como comodín)
 router.get('/:id', optionalToken, productController.getProductById);
 
-// 3. Rutas de acción (Crear, Editar, Borrar)
+// 3. Acciones de producto
 router.post(
   '/',
   verifyToken,
