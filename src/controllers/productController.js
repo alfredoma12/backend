@@ -1,9 +1,5 @@
 const pool = require('../config/db');
 
-/* ══════════════════════════════════════════════
-   GET /api/products   Pública
-   Query params: search, category, sort, page, limit
-══════════════════════════════════════════════ */
 const getAll = async (req, res) => {
   const { search = '', category, sort = 'newest', page = 1, limit = 12 } = req.query;
 
@@ -64,9 +60,7 @@ const getAll = async (req, res) => {
   }
 };
 
-/* ══════════════════════════════════════════════
-   GET /api/products/mine   🔒 Privada
-══════════════════════════════════════════════ */
+
 const getMine = async (req, res) => {
   try {
     const result = await pool.query(
@@ -89,9 +83,7 @@ const getMine = async (req, res) => {
   }
 };
 
-/* ══════════════════════════════════════════════
-   GET /api/products/:id   Pública
-══════════════════════════════════════════════ */
+
 const getById = async (req, res) => {
   const { id } = req.params;
 
@@ -112,7 +104,6 @@ const getById = async (req, res) => {
       return res.status(404).json({ error: 'Producto no encontrado.' });
     }
 
-    // Obtener imágenes del producto
     const images = await pool.query(
       'SELECT image_url, is_cover FROM product_images WHERE product_id = $1 ORDER BY is_cover DESC',
       [id]
@@ -128,12 +119,12 @@ const getById = async (req, res) => {
   }
 };
 
-/* ══════════════════════════════════════════════
-   POST /api/products   🔒 Privada
-══════════════════════════════════════════════ */
+
 const create = async (req, res) => {
   const { title, description, price, stock = 1, category_id } = req.body;
-  const files = req.files || [];
+  
+  // ✅ CORRECCIÓN: Multer .single('image') inyecta el archivo en req.file (singular)
+  const file = req.file;
 
   try {
     const result = await pool.query(
@@ -145,12 +136,12 @@ const create = async (req, res) => {
 
     const product = result.rows[0];
 
-    // Guardar imágenes si se subieron
-    for (let i = 0; i < files.length; i++) {
-      const imageUrl = `/uploads/${files[i].filename}`;
+    // ✅ CORRECCIÓN: Validamos si el usuario adjuntó una imagen antes de registrarla en la BD
+    if (file) {
+      const imageUrl = `/uploads/${file.filename}`;
       await pool.query(
         'INSERT INTO product_images (product_id, image_url, is_cover) VALUES ($1, $2, $3)',
-        [product.id, imageUrl, i === 0]
+        [product.id, imageUrl, true]
       );
     }
 
@@ -164,15 +155,12 @@ const create = async (req, res) => {
   }
 };
 
-/* ══════════════════════════════════════════════
-   PUT /api/products/:id   🔒 Privada
-══════════════════════════════════════════════ */
+
 const update = async (req, res) => {
   const { id } = req.params;
   const { title, description, price, stock, status, category_id } = req.body;
 
   try {
-    // Verificar que el producto le pertenece al usuario
     const check = await pool.query(
       'SELECT user_id FROM products WHERE id = $1',
       [id]
@@ -209,9 +197,6 @@ const update = async (req, res) => {
   }
 };
 
-/* ══════════════════════════════════════════════
-   DELETE /api/products/:id   🔒 Privada
-══════════════════════════════════════════════ */
 const remove = async (req, res) => {
   const { id } = req.params;
 
@@ -238,10 +223,9 @@ const remove = async (req, res) => {
   }
 };
 
-// ⚠️ Mapeo de nombres para calzar perfecto con las rutas de Express
 module.exports = { 
   getAllProducts: getAll, 
-  getMineProducts: getMine, // Si necesitas usarlo en tus rutas privadas más adelante
+  getMineProducts: getMine, 
   getProductById: getById, 
   createProduct: create, 
   updateProduct: update, 
